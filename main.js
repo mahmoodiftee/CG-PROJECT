@@ -20,9 +20,7 @@ const createRenderer = (rendererSettings) => {
 
 const createScene = (color) => {
   const scene = new THREE.Scene();
-
   scene.background = new THREE.Color(color);
-
   return scene;
 };
 
@@ -47,9 +45,7 @@ const createCamera = (cameraSettings) => {
     far // far clipping plane
   );
 
-  // Move the camera back so we can view the scene
   camera.position.set(position.x, position.y, position.z);
-
   return camera;
 };
 
@@ -57,7 +53,6 @@ const createLights = () => {
   const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
   const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
   directionalLight.position.set(10, 10, 10);
-
   return { ambientLight, directionalLight };
 };
 
@@ -93,32 +88,35 @@ const createControls = (camera, canvas, controlSettings) => {
 const createHelicopter = () => {
   const helicopter = new THREE.Group();
 
+  // Load textures
+  const bodyTexture = new THREE.TextureLoader().load('https://i.ibb.co/HY3jVpf/6627691.jpg');
+  const bladeTexture = new THREE.TextureLoader().load('https://i.ibb.co/HY3jVpf/6627691.jpg'); // Replace with actual blade texture URL
+
   // Helicopter body
   const bodyGeometry = new THREE.CylinderGeometry(2, 2, 10, 32);
-  const bodyMaterial = new THREE.MeshStandardMaterial({
-    color: 0x00ff00,
-    map: new THREE.TextureLoader().load('https://i.ibb.co/HY3jVpf/6627691.jpg')
-  });
+  const bodyMaterial = new THREE.MeshStandardMaterial({ map: bodyTexture });
   const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
   body.rotation.z = Math.PI / 2; // Rotate body to horizontal position
   helicopter.add(body);
 
   // Helicopter tail
   const tailGeometry = new THREE.CylinderGeometry(0.5, 0.5, 7, 32);
-  const tailMaterial = new THREE.MeshStandardMaterial({
-    color: 0x00ff00,
-    map: new THREE.TextureLoader().load('https://i.ibb.co/HY3jVpf/6627691.jpg')
-  });
+  const tailMaterial = new THREE.MeshStandardMaterial({ map: bodyTexture });
   const tail = new THREE.Mesh(tailGeometry, tailMaterial);
   tail.position.set(-8, 0, 0); // Position the tail at the end of the body
   helicopter.add(tail);
 
   // Helicopter main rotor
   const rotorGeometry = new THREE.BoxGeometry(0.2, 15, 1);
-  const rotorMaterial = new THREE.MeshStandardMaterial({ color: 0x000000 });
+  const rotorMaterial = new THREE.MeshStandardMaterial({ map: bladeTexture });
   const rotor = new THREE.Mesh(rotorGeometry, rotorMaterial);
   rotor.position.set(0, 0, 2.5); // Position rotor on top of the body
   helicopter.add(rotor);
+
+  // Adjusting texture repeat for better appearance
+  bladeTexture.wrapS = THREE.RepeatWrapping;
+  bladeTexture.wrapT = THREE.RepeatWrapping;
+  bladeTexture.repeat.set(1, 1); // Adjust as needed
 
   const radiansPerSecond = THREE.MathUtils.degToRad(180);
   return {
