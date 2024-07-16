@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 const createRenderer = (rendererSettings) => {
   const defaultRendererSettings = {
@@ -85,46 +86,16 @@ const createControls = (camera, canvas, controlSettings) => {
   };
 };
 
-const createHelicopter = () => {
-  const helicopter = new THREE.Group();
-
-  // Load textures
-  const bodyTexture = new THREE.TextureLoader().load('https://i.ibb.co/HY3jVpf/6627691.jpg');
-  const bladeTexture = new THREE.TextureLoader().load('https://i.ibb.co/HY3jVpf/6627691.jpg'); // Replace with actual blade texture URL
-
-  // Helicopter body
-  const bodyGeometry = new THREE.CylinderGeometry(2, 2, 10, 32);
-  const bodyMaterial = new THREE.MeshStandardMaterial({ map: bodyTexture });
-  const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
-  body.rotation.z = Math.PI / 2; // Rotate body to horizontal position
-  helicopter.add(body);
-
-  // Helicopter tail
-  const tailGeometry = new THREE.CylinderGeometry(0.5, 0.5, 7, 32);
-  const tailMaterial = new THREE.MeshStandardMaterial({ map: bodyTexture });
-  const tail = new THREE.Mesh(tailGeometry, tailMaterial);
-  tail.position.set(-8, 0, 0); // Position the tail at the end of the body
-  helicopter.add(tail);
-
-  // Helicopter main rotor
-  const rotorGeometry = new THREE.BoxGeometry(0.2, 15, 1);
-  const rotorMaterial = new THREE.MeshStandardMaterial({ map: bladeTexture });
-  const rotor = new THREE.Mesh(rotorGeometry, rotorMaterial);
-  rotor.position.set(0, 0, 2.5); // Position rotor on top of the body
-  helicopter.add(rotor);
-
-  // Adjusting texture repeat for better appearance
-  bladeTexture.wrapS = THREE.RepeatWrapping;
-  bladeTexture.wrapT = THREE.RepeatWrapping;
-  bladeTexture.repeat.set(1, 1); // Adjust as needed
-
-  const radiansPerSecond = THREE.MathUtils.degToRad(180);
-  return {
-    helicopter: helicopter,
-    tick: (delta) => {
-      rotor.rotation.z += radiansPerSecond * delta;
-    }
-  };
+const loadGLTFModel = async (scene) => {
+  const loader = new GLTFLoader();
+  return new Promise((resolve, reject) => {
+    loader.load('scene.gltf', (gltf) => {
+      const model = gltf.scene;
+      model.scale.set(2, 2, 2); // Adjust the scale as needed
+      scene.add(model);
+      resolve(model);
+    }, undefined, reject);
+  });
 };
 
 class World {
@@ -132,30 +103,21 @@ class World {
     this.scene = createScene('#030712');
     this.camera = createCamera();
     this.renderer = createRenderer();
-    this.helicopter = createHelicopter();
     this.lights = createLights();
 
-    this.scene.add(
-      this.lights.ambientLight,
-      this.lights.directionalLight,
-      this.helicopter.helicopter
-    );
+    this.scene.add(this.lights.ambientLight, this.lights.directionalLight);
 
     this.controls = createControls(this.camera, this.renderer.domElement);
     this.loop = new Loop(this.camera, this.scene, this.renderer);
     this.loop.updatables.push(this.controls);
-    this.loop.updatables.push(this.helicopter);
 
     container.appendChild(this.renderer.domElement);
     this.resizer = new Resizer(container, this.camera, this.renderer);
   }
 
-  render() {
-    this.renderer.render(this.scene, this.camera);
-  }
-
   async init() {
-    this.controls.orbitControls.target.copy(this.helicopter.helicopter.position);
+    this.helicopter = await loadGLTFModel(this.scene);
+    this.controls.orbitControls.target.copy(this.helicopter.position);
   }
 
   start() {
