@@ -1,14 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Three.js Project</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" type="text/css" href="style.css" />
+  <title>Three.js Example</title>
 </head>
 <body>
-    <div id="container"></div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="main.js"></script>
+  <div id="main-container"></div>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.151.3/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.151.3/examples/jsm/"
+      }
+    }
+  </script>
+  <script type="module" src="main.js"></script>
 </body>
 </html>
